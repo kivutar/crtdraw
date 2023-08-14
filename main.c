@@ -34,16 +34,16 @@ void set_pixel(
 }
 
 int main(void) {
-	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-		printf("SDL_Init failed: %s\n", SDL_GetError());
+	if (SDL_VideoInit("KMSDRM") != 0) {
+		printf("SDL_VideoInit failed: %s\n", SDL_GetError());
 		exit(1);
 	}
 
 	SDL_Window *const window = SDL_CreateWindow(
-		"Draw",
+		"CRTDRAW",
 		SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 		screen_width, screen_height,
-		SDL_WINDOW_SHOWN);
+		SDL_WINDOW_FULLSCREEN);
 
 	if (window == NULL) {
 		printf("SDL_CreateWindow failed: %s\n", SDL_GetError());
@@ -79,6 +79,13 @@ int main(void) {
 			if (event.type == SDL_QUIT) {
 				quit = true;
 			}
+			else if (event.type == SDL_KEYDOWN) {
+				switch(event.key.keysym.sym) {
+				case SDLK_ESCAPE:
+					quit = true;
+        				break;
+    				}
+			}
 			else if (event.type == SDL_MOUSEBUTTONDOWN) {
 				drawing = true;
 			}
@@ -99,8 +106,8 @@ int main(void) {
 			y = clamp(y, 0, screen_height - 1);
 
 			set_pixel(surface, x, y, r, g, b);
-			SDL_UpdateWindowSurface(window);
 		}
+		SDL_UpdateWindowSurface(window);
 	}
 
 	SDL_DestroyWindow(window);
