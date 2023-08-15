@@ -57,7 +57,7 @@ int main(void) {
 		exit(1);
 	}
 
-	SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0, 0, 0));
+	SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 128, 128, 128));
 	SDL_UpdateWindowSurface(window);
 
 	int mouse_x = 0;
@@ -107,6 +107,7 @@ int main(void) {
 
 			set_pixel(surface, x, y, r, g, b);
 		}
+		set_pixel(surface, 50, 50, 255, 0, 0);
 		SDL_UpdateWindowSurface(window);
 	}
 
