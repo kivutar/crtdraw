@@ -10,8 +10,11 @@
 #include <SDL2/SDL_image.h>
 #endif
 
-int screen_width = 320;
-int screen_height = 240;
+int screen_w = 320;
+int screen_h = 240;
+
+int spr_w = 16;
+int spr_h = 16;
 
 void die(const char *fmt, ...) {
 	char buffer[4096];
@@ -77,24 +80,23 @@ int main(void) {
 	SDL_Window *const window = SDL_CreateWindow(
 		"CRTDRAW",
 		SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-		screen_width, screen_height, 0);
+		screen_w, screen_h, 0);
 
 	if (window == NULL)
 		die("SDL_CreateWindow failed: %s\n", SDL_GetError());
 
-	// create a 16x16 surface
-	SDL_Surface *const sprite_surf = SDL_CreateRGBSurface(0, 16, 16, 32, 0, 0, 0, 0);
-	SDL_FillRect(sprite_surf, NULL, SDL_MapRGB(sprite_surf->format, 255, 255, 255));
+	SDL_Surface *const spr_srf = SDL_CreateRGBSurface(0, spr_w, spr_h, 32, 0, 0, 0, 0);
+	SDL_FillRect(spr_srf, NULL, SDL_MapRGB(spr_srf->format, 255, 255, 255));
 
-	SDL_Surface *win_surf = SDL_GetWindowSurface(window);
+	SDL_Surface *win_srf = SDL_GetWindowSurface(window);
 
-	if (win_surf == NULL)
+	if (win_srf == NULL)
 		die("SDL_GetWindowSurface failed: %s\n", SDL_GetError());
 
     SDL_Cursor* cursor = load_png_cursor("pointer.png", 0, 0);
     SDL_SetCursor(cursor);
 
-	SDL_FillRect(win_surf, NULL, SDL_MapRGB(win_surf->format, 128, 128, 128));
+	SDL_FillRect(win_srf, NULL, SDL_MapRGB(win_srf->format, 128, 128, 128));
 	SDL_UpdateWindowSurface(window);
 
 	int mouse_x = 0;
@@ -139,15 +141,24 @@ int main(void) {
 		}
 
 		if (drawing) {
-			x = clamp(x, 0, 16*8 - 1);
-			y = clamp(y, 0, 16*8 - 1);
+			x = clamp(x, screen_w / 2 - spr_w*8 / 2, screen_w / 2 + spr_w*8 / 2 - 1);
+			y = clamp(y, screen_h / 2 - spr_h*8 / 2, screen_h / 2 + spr_h*8 / 2 - 1);
 
-			set_pixel(sprite_surf, x/8, y/8, r, g, b);
+			set_pixel(spr_srf, (x - screen_w/2 + spr_w*8/2) / 8 , (y - screen_h/2 + spr_h*8/2) / 8 , r, g, b);
 		}
 
-		SDL_Rect src_rect = { 0, 0, 16, 16 };
-		SDL_Rect dst_rect = { 0, 0, 16*8, 16*8 };
-		SDL_BlitScaled(sprite_surf, &src_rect, win_surf, &dst_rect);
+		// Scaled sprite
+		SDL_Rect src_rect = { 0, 0, spr_w, spr_h };
+		SDL_Rect dst_rect = { screen_w / 2 - spr_w*8 / 2, screen_h / 2 - spr_h*8 / 2, spr_w*8, spr_h*8 };
+		SDL_Rect dst_rect2 = { screen_w / 2 - spr_w*8 / 2 - 1, screen_h / 2 - spr_h*8 / 2 - 1, spr_w*8 + 2, spr_h*8 + 2 };
+
+		SDL_FillRect(win_srf, &dst_rect2, SDL_MapRGB(win_srf->format, 64, 64, 64));
+
+		SDL_BlitScaled(spr_srf, &src_rect, win_srf, &dst_rect);
+
+		// Miniature
+		SDL_Rect dst_rect3 = { screen_w - spr_w - 8, screen_h - spr_h - 8, spr_w, spr_h };
+		SDL_BlitScaled(spr_srf, &src_rect, win_srf, &dst_rect3);
 
 		SDL_UpdateWindowSurface(window);
 	}
