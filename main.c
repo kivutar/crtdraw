@@ -4,12 +4,29 @@
 
 #ifdef _WIN32
 #include <SDL.h>
+#include <SDL_image.h>
 #else
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 #endif
 
 int screen_width = 320;
 int screen_height = 240;
+
+void die(const char *fmt, ...) {
+	char buffer[4096];
+
+	va_list va;
+	va_start(va, fmt);
+	vsnprintf(buffer, sizeof(buffer), fmt, va);
+	va_end(va);
+
+	fputs(buffer, stderr);
+	fputc('\n', stderr);
+	fflush(stderr);
+
+	exit(EXIT_FAILURE);
+}
 
 int clamp(const int val, const int min, const int max) {
 	if (val < min) return min;
@@ -33,29 +50,45 @@ void set_pixel(
 	pixels[x + (y * surface->w)] = color;
 }
 
+SDL_Cursor* load_png_cursor(const char* filename, int hot_x, int hot_y) {
+    SDL_Surface* surf = IMG_Load(filename);
+    if (!surf) {
+        fprintf(stderr, "Unable to load image: %s\n", IMG_GetError());
+        return NULL;
+    }
+
+    SDL_Cursor* cursor = NULL;
+    cursor = SDL_CreateColorCursor(surf, hot_x, hot_y);
+
+    if (!cursor)
+        fprintf(stderr, "Unable to create cursor: %s\n", SDL_GetError());
+
+    SDL_FreeSurface(surf);
+
+    return cursor;
+}
+
 int main(void) {
-	if (SDL_VideoInit("KMSDRM") != 0) {
+	if (SDL_VideoInit("KMSDRM") != 0 || SDL_VideoInit(NULL) != 0)
 		printf("SDL_VideoInit failed: %s\n", SDL_GetError());
-		exit(1);
-	}
+
+	IMG_Init(IMG_INIT_PNG);
 
 	SDL_Window *const window = SDL_CreateWindow(
 		"CRTDRAW",
 		SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-		screen_width, screen_height,
-		SDL_WINDOW_FULLSCREEN);
+		screen_width, screen_height, 0);
 
-	if (window == NULL) {
-		printf("SDL_CreateWindow failed: %s\n", SDL_GetError());
-		exit(1);
-	}
+	if (window == NULL)
+		die("SDL_CreateWindow failed: %s\n", SDL_GetError());
 
 	SDL_Surface *surface = SDL_GetWindowSurface(window);
 
-	if (surface == NULL) {
-		printf("SDL_GetWindowSurface failed: %s\n", SDL_GetError());
-		exit(1);
-	}
+	if (surface == NULL)
+		die("SDL_GetWindowSurface failed: %s\n", SDL_GetError());
+
+    SDL_Cursor* cursor = load_png_cursor("pointer.png", 0, 0);
+    SDL_SetCursor(cursor);
 
 	SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 128, 128, 128));
 	SDL_UpdateWindowSurface(window);
@@ -111,8 +144,11 @@ int main(void) {
 		SDL_UpdateWindowSurface(window);
 	}
 
+	SDL_FreeCursor(cursor);
+
 	SDL_DestroyWindow(window);
 
+	IMG_Quit();
 	SDL_Quit();
 
 	return 0;
