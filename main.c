@@ -82,15 +82,19 @@ int main(void) {
 	if (window == NULL)
 		die("SDL_CreateWindow failed: %s\n", SDL_GetError());
 
-	SDL_Surface *surface = SDL_GetWindowSurface(window);
+	// create a 16x16 surface
+	SDL_Surface *const sprite_surf = SDL_CreateRGBSurface(0, 16, 16, 32, 0, 0, 0, 0);
+	SDL_FillRect(sprite_surf, NULL, SDL_MapRGB(sprite_surf->format, 255, 255, 255));
 
-	if (surface == NULL)
+	SDL_Surface *win_surf = SDL_GetWindowSurface(window);
+
+	if (win_surf == NULL)
 		die("SDL_GetWindowSurface failed: %s\n", SDL_GetError());
 
     SDL_Cursor* cursor = load_png_cursor("pointer.png", 0, 0);
     SDL_SetCursor(cursor);
 
-	SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 128, 128, 128));
+	SDL_FillRect(win_surf, NULL, SDL_MapRGB(win_surf->format, 128, 128, 128));
 	SDL_UpdateWindowSurface(window);
 
 	int mouse_x = 0;
@@ -99,9 +103,9 @@ int main(void) {
 	int x = 0;
 	int y = 0;
 
-	Uint8 r = 255;
-	Uint8 g = 255;
-	Uint8 b = 255;
+	Uint8 r = 0;
+	Uint8 g = 0;
+	Uint8 b = 0;
 
 	bool quit = false;
 	bool drawing = false;
@@ -135,12 +139,16 @@ int main(void) {
 		}
 
 		if (drawing) {
-			x = clamp(x, 0, screen_width - 1);
-			y = clamp(y, 0, screen_height - 1);
+			x = clamp(x, 0, 16*8 - 1);
+			y = clamp(y, 0, 16*8 - 1);
 
-			set_pixel(surface, x, y, r, g, b);
+			set_pixel(sprite_surf, x/8, y/8, r, g, b);
 		}
-		set_pixel(surface, 50, 50, 255, 0, 0);
+
+		SDL_Rect src_rect = { 0, 0, 16, 16 };
+		SDL_Rect dst_rect = { 0, 0, 16*8, 16*8 };
+		SDL_BlitScaled(sprite_surf, &src_rect, win_surf, &dst_rect);
+
 		SDL_UpdateWindowSurface(window);
 	}
 
