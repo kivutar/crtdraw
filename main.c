@@ -89,11 +89,30 @@ SDL_Cursor* load_png_cursor(const char* filename, int hot_x, int hot_y) {
     return cursor;
 }
 
-int main(void) {
+int main(int argc, char *argv[]) {
 	if (SDL_VideoInit("KMSDRM") != 0 || SDL_VideoInit(NULL) != 0)
 		printf("SDL_VideoInit failed: %s\n", SDL_GetError());
 
 	IMG_Init(IMG_INIT_PNG);
+
+	// sprite
+	SDL_Surface *spr_srf = NULL;
+
+	// if argc > 1, then argv[1] is the path to the image to load
+	if (argc > 1) {
+		printf("Loading %s\n", argv[1]);
+		spr_srf = IMG_Load(argv[1]);
+
+		if (spr_srf == NULL)
+			die("IMG_Load failed: %s\n", IMG_GetError());
+
+		spr_w = spr_srf->w;
+		spr_h = spr_srf->h;
+
+	} else {
+		SDL_CreateRGBSurface(0, spr_w, spr_h, 32, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
+		SDL_FillRect(spr_srf, NULL, SDL_MapRGBA(spr_srf->format, 255, 255, 255, 255));
+	}
 
 	SDL_Window *const window = SDL_CreateWindow(
 		"CRTDRAW",
@@ -103,20 +122,14 @@ int main(void) {
 	if (window == NULL)
 		die("SDL_CreateWindow failed: %s\n", SDL_GetError());
 
-	// sprite
-	SDL_Surface *const spr_srf = SDL_CreateRGBSurface(0, spr_w, spr_h, 32, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
-	SDL_FillRect(spr_srf, NULL, SDL_MapRGBA(spr_srf->format, 255, 255, 255, 255));
-	SDL_SetSurfaceBlendMode(spr_srf, SDL_BLENDMODE_BLEND);
 
 	// overlay
 	SDL_Surface *const ovl_srf = SDL_CreateRGBSurface(0, spr_w, spr_h, 32, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
 	SDL_FillRect(ovl_srf, NULL, SDL_MapRGBA(ovl_srf->format, 0, 0, 0, 0));
-	SDL_SetSurfaceBlendMode(ovl_srf, SDL_BLENDMODE_BLEND);
 
 	// window
 	SDL_Surface *win_srf = SDL_GetWindowSurface(window);
 	SDL_FillRect(win_srf, NULL, SDL_MapRGBA(win_srf->format, 128, 128, 128, 255));
-	SDL_SetSurfaceBlendMode(win_srf, SDL_BLENDMODE_BLEND);
 
 	if (win_srf == NULL)
 		die("SDL_GetWindowSurface failed: %s\n", SDL_GetError());
