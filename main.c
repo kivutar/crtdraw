@@ -15,6 +15,7 @@ int screen_h = 240;
 
 int spr_w = 16;
 int spr_h = 16;
+int scale = 8;
 
 void die(const char *fmt, ...) {
 	char buffer[4096];
@@ -150,28 +151,28 @@ int main(void) {
 
 		Uint32 mouse = SDL_GetMouseState(&x, &y);
 
-		int offset_x = screen_w / 2 - spr_w*8 / 2;
-		int offset_y = screen_h / 2 - spr_h*8 / 2;
+		int offset_x = screen_w / 2 - spr_w*scale / 2;
+		int offset_y = screen_h / 2 - spr_h*scale / 2;
 
-		x = clamp(x, offset_x, offset_x + spr_w*8 - 1);
-		y = clamp(y, offset_y, offset_y + spr_h*8 - 1);
+		x = clamp(x, offset_x, offset_x + spr_w*scale - 1);
+		y = clamp(y, offset_y, offset_y + spr_h*scale - 1);
 
 		if (mouse & SDL_BUTTON(SDL_BUTTON_LEFT))
-			set_pixel(spr_srf, (x - offset_x) / 8 , (y - offset_y) / 8 , r, g, b, a);
+			set_pixel(spr_srf, (x - offset_x) / scale , (y - offset_y) / scale , r, g, b, a);
 
 		if (mouse & SDL_BUTTON(SDL_BUTTON_RIGHT))
-			get_pixel(spr_srf, (x - offset_x) / 8 , (y - offset_y) / 8 , &r, &g, &b, &a);
+			get_pixel(spr_srf, (x - offset_x) / scale , (y - offset_y) / scale , &r, &g, &b, &a);
 
 		// Scaled sprite with border
 		SDL_Rect src_rect = { 0, 0, spr_w, spr_h };
-		SDL_Rect dst_rect = { offset_x, offset_y, spr_w*8, spr_h*8 };
-		SDL_Rect border_rect = { offset_x - 1, offset_y - 1, spr_w*8 + 2, spr_h*8 + 2 };
+		SDL_Rect dst_rect = { offset_x, offset_y, spr_w*scale, spr_h*scale };
+		SDL_Rect border_rect = { offset_x - 1, offset_y - 1, spr_w*scale + 2, spr_h*scale + 2 };
 
 		SDL_FillRect(win_srf, &border_rect, SDL_MapRGBA(win_srf->format, 64, 64, 64, 255));
 
 		// Overlay
 		SDL_FillRect(ovl_srf, NULL, SDL_MapRGBA(ovl_srf->format, 0, 0, 0, 0));
-		set_pixel(ovl_srf, (x - offset_x) / 8 , (y - offset_y) / 8 , 255, 0, 0, 128);
+		set_pixel(ovl_srf, (x - offset_x) / scale , (y - offset_y) / scale , 255, 0, 0, 128);
 
 		SDL_BlitScaled(spr_srf, &src_rect, win_srf, &dst_rect);
 		SDL_BlitScaled(ovl_srf, &src_rect, win_srf, &dst_rect);
