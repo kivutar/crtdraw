@@ -15,7 +15,7 @@ int screen_h = 240;
 
 int spr_w = 16;
 int spr_h = 16;
-int scale = 8;
+int scale = 1;
 
 void die(const char *fmt, ...) {
 	char buffer[4096];
@@ -126,6 +126,7 @@ int main(void) {
 
 	int x = 0;
 	int y = 0;
+	scale = (screen_h-64) / spr_h;
 
 	Uint8 r = 0;
 	Uint8 g = 0;
