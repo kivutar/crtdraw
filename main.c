@@ -107,9 +107,6 @@ int main(void) {
     SDL_Cursor* cursor = load_png_cursor("pointer.png", 0, 0);
     SDL_SetCursor(cursor);
 
-	int mouse_x = 0;
-	int mouse_y = 0;
-
 	int x = 0;
 	int y = 0;
 
@@ -118,7 +115,6 @@ int main(void) {
 	Uint8 b = 0;
 
 	bool quit = false;
-	bool drawing = false;
 
 	while (!quit) {
 		SDL_Event event;
@@ -133,28 +129,17 @@ int main(void) {
         				break;
     				}
 			}
-			else if (event.type == SDL_MOUSEBUTTONDOWN) {
-				drawing = true;
-			}
-			else if (event.type == SDL_MOUSEBUTTONUP) {
-				drawing = false;
-			}
-			else if (event.type == SDL_MOUSEMOTION) {
-				mouse_x = event.motion.x;
-				mouse_y = event.motion.y;
-
-				x = mouse_x;
-				y = mouse_y;
-			}
 		}
+
+		Uint32 mouse = SDL_GetMouseState(&x, &y);
 
 		int offset_x = screen_w / 2 - spr_w*8 / 2;
 		int offset_y = screen_h / 2 - spr_h*8 / 2;
 
-		x = clamp(x, offset_x, screen_w / 2 + spr_w*8 / 2 - 1);
-		y = clamp(y, offset_y, screen_h / 2 + spr_h*8 / 2 - 1);
+		x = clamp(x, offset_x, offset_x + spr_w*8 - 1);
+		y = clamp(y, offset_y, offset_y + spr_h*8 - 1);
 
-		if (drawing)
+		if (mouse & SDL_BUTTON(SDL_BUTTON_LEFT))
 			set_pixel(spr_srf, (x - offset_x) / 8 , (y - offset_y) / 8 , r, g, b, 255);
 
 		// Scaled sprite with border
