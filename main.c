@@ -54,6 +54,22 @@ void set_pixel(
 	pixels[x + (y * surface->w)] = color;
 }
 
+void get_pixel(
+	SDL_Surface *const surface,
+	const int x,
+	const int y,
+	Uint8 *const r,
+	Uint8 *const g,
+	Uint8 *const b,
+	Uint8 *const a)
+{
+	Uint32 *const pixels = (Uint32 *) surface->pixels;
+
+	const Uint32 color = pixels[x + (y * surface->w)];
+
+	SDL_GetRGBA(color, surface->format, r, g, b, a);
+}
+
 SDL_Cursor* load_png_cursor(const char* filename, int hot_x, int hot_y) {
     SDL_Surface* surf = IMG_Load(filename);
     if (!surf) {
@@ -113,6 +129,7 @@ int main(void) {
 	Uint8 r = 0;
 	Uint8 g = 0;
 	Uint8 b = 0;
+	Uint8 a = 255;
 
 	bool quit = false;
 
@@ -140,7 +157,10 @@ int main(void) {
 		y = clamp(y, offset_y, offset_y + spr_h*8 - 1);
 
 		if (mouse & SDL_BUTTON(SDL_BUTTON_LEFT))
-			set_pixel(spr_srf, (x - offset_x) / 8 , (y - offset_y) / 8 , r, g, b, 255);
+			set_pixel(spr_srf, (x - offset_x) / 8 , (y - offset_y) / 8 , r, g, b, a);
+
+		if (mouse & SDL_BUTTON(SDL_BUTTON_RIGHT))
+			get_pixel(spr_srf, (x - offset_x) / 8 , (y - offset_y) / 8 , &r, &g, &b, &a);
 
 		// Scaled sprite with border
 		SDL_Rect src_rect = { 0, 0, spr_w, spr_h };
