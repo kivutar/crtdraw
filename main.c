@@ -110,7 +110,7 @@ int main(int argc, char *argv[]) {
 		spr_h = spr_srf->h;
 
 	} else {
-		SDL_CreateRGBSurface(0, spr_w, spr_h, 32, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
+		spr_srf = SDL_CreateRGBSurface(0, spr_w, spr_h, 32, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
 		SDL_FillRect(spr_srf, NULL, SDL_MapRGBA(spr_srf->format, 255, 255, 255, 255));
 	}
 
@@ -185,15 +185,15 @@ int main(int argc, char *argv[]) {
 		SDL_FillRect(win_srf, &border_rect, SDL_MapRGBA(win_srf->format, 64, 64, 64, 255));
 
 		// Overlay
-		SDL_FillRect(ovl_srf, NULL, SDL_MapRGBA(ovl_srf->format, 0, 0, 0, 0));
+		SDL_FillRect(ovl_srf, NULL, 0);
 		set_pixel(ovl_srf, (x - offset_x) / scale , (y - offset_y) / scale , 255, 0, 0, 128);
 
 		SDL_BlitScaled(spr_srf, &src_rect, win_srf, &dst_rect);
 		SDL_BlitScaled(ovl_srf, &src_rect, win_srf, &dst_rect);
 
 		// Miniature
-		SDL_Rect dst_rect3 = { screen_w - spr_w - 8, screen_h - spr_h - 8, spr_w, spr_h };
-		SDL_BlitScaled(spr_srf, &src_rect, win_srf, &dst_rect3);
+		SDL_Rect mini_rect = { screen_w - spr_w - 8, screen_h - spr_h - 8, spr_w, spr_h };
+		SDL_BlitScaled(spr_srf, &src_rect, win_srf, &mini_rect);
 
 		SDL_UpdateWindowSurface(window);
 	}
