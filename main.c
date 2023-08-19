@@ -16,6 +16,7 @@ int screen_h = 240;
 int spr_w = 16;
 int spr_h = 16;
 int scale = 1;
+int margin = 16;
 
 void die(const char *fmt, ...) {
 	char buffer[4096];
@@ -87,6 +88,21 @@ SDL_Cursor* load_png_cursor(const char* filename, int hot_x, int hot_y) {
     SDL_FreeSurface(surf);
 
     return cursor;
+}
+
+void draw_miniature(SDL_Surface *const src, SDL_Surface *const dst) {
+	SDL_Rect src_rect = { 0, 0, spr_w, spr_h };
+	SDL_Rect dst_rect = { screen_w - spr_w - margin, screen_h - spr_h - margin, spr_w, spr_h };
+	SDL_BlitScaled(src, &src_rect, dst, &dst_rect);
+}
+
+void draw_palette(SDL_Surface *const dst) {
+	SDL_Rect rect = { margin - 1, margin - 1, 8 + 2, 16*8 + 2 };
+	SDL_FillRect(dst, &rect, SDL_MapRGBA(dst->format, 64, 64, 64, 255));
+	for (int i = 0; i < 16; i++) {
+		SDL_Rect pal_rect = { margin, margin + i * 8, 8, 8 };
+		SDL_FillRect(dst, &pal_rect, SDL_MapRGBA(dst->format, i * 16, i * 16, i * 16, 255));
+	}
 }
 
 int main(int argc, char *argv[]) {
@@ -191,9 +207,9 @@ int main(int argc, char *argv[]) {
 		SDL_BlitScaled(spr_srf, &src_rect, win_srf, &dst_rect);
 		SDL_BlitScaled(ovl_srf, &src_rect, win_srf, &dst_rect);
 
-		// Miniature
-		SDL_Rect mini_rect = { screen_w - spr_w - 8, screen_h - spr_h - 8, spr_w, spr_h };
-		SDL_BlitScaled(spr_srf, &src_rect, win_srf, &mini_rect);
+		draw_miniature(spr_srf, win_srf);
+
+		draw_palette(win_srf);
 
 		SDL_UpdateWindowSurface(window);
 	}
