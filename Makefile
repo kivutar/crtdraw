@@ -1,5 +1,12 @@
-crtdraw:
-	$(CC) -o crtdraw main.c -lSDL2 -lSDL2_image
+TARGET = crtdraw
+
+%.o: %.c
+	$(CC) -c -o $@ $< $(CFLAGS)
+
+OBJS = main.o
+
+$(TARGET): $(OBJS)
+	$(CC) -o $(TARGET) $(OBJS) -lSDL2 -lSDL2_image
 
 clean:
-	rm crtdraw
+	rm -f $(TARGET) $(OBJS)
